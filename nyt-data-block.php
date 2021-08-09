@@ -17,6 +17,7 @@ class Fone_NYT_Data_Block_Plugin {
         // Add sections and form fields
     	add_action( 'admin_init', array( $this, 'fone_setup_sections' ) );
     	add_action( 'admin_init', array( $this, 'fone_setup_form_data' ) );
+        add_shortcode( "nyt_data2", array($this, "fone_nyt_shortcode") );
     }
 
     public function create_plugin_settings_page() {
@@ -111,6 +112,29 @@ class Fone_NYT_Data_Block_Plugin {
             printf( '<p class="description">%s</p>', $supplimental );
         }
 
+    }
+
+    public function display_external_data($api_endpoint){
+        $response = wp_safe_remote_get($api_endpoint, $args = [
+            'reject_unsafe_urls' => true
+        ]);
+        $response_body = wp_remote_retrieve_body($response);
+        $objectify_response_body = json_decode($response_body);
+        $results = $objectify_response_body->results;
+        return $results;
+    }
+
+
+    public function fone_nyt_shortcode() {
+        $nyt_api_endpoint = 'https://api.nytimes.com/svc/topstories/v2/home.json?api-key=RvFLzI8ER6llrY5HDwpgHl35yxPhjJFp';
+        $nyt_api_endpoint2 = get_option('nyt_api_endpoint');
+        $data = display_external_data($nyt_api_endpoint2);
+        $list = '<ul>';
+        foreach ($data as $result){
+            $list .= '<li><a href="' . $result->url . '" target="_blank">' . $result->title . '</a></li>';
+        }
+        $list .= '</ul>';
+        return $list;
     }
 
 }
