@@ -8,7 +8,7 @@ License:     GPL2+
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 */
-class Fone_NYT_Data_Block_Plugin {
+class Fone_NYT_Top_Stories_Plugin {
 
     public function __construct() {
     	// Hook into the admin menu
@@ -19,15 +19,15 @@ class Fone_NYT_Data_Block_Plugin {
         // Add form fields
     	add_action( 'admin_init', array( $this, 'fone_setup_form_data' ) );
         // Add shortcode
-        add_shortcode( "nyt_data2", array($this, "fone_nyt_shortcode") );
+        add_shortcode( "nyt_top_stories", array($this, "fone_nyt_shortcode") );
     }
 
     public function fone_create_plugin_settings_page() {
     	// Add the menu item and page
     	$page_title = 'New York Times Data Block Settings ';
-    	$menu_title = 'NYT Data';
+    	$menu_title = 'NYT Top Stories';
     	$capability = 'manage_options';
-    	$slug = 'fone_nyt_data_block';
+    	$slug = 'fone_nyt_top_stories';
     	$callback = array( $this, 'fone_plugin_settings_page_content' );
     	$icon = 'dashicons-admin-plugins';
     	$position = 100;
@@ -43,8 +43,8 @@ class Fone_NYT_Data_Block_Plugin {
             } ?>
     		<form method="POST" action="options.php">
                 <?php
-                    settings_fields( 'fone_nyt_data_block' );
-                    do_settings_sections( 'fone_nyt_data_block' );
+                    settings_fields( 'fone_nyt_top_stories' );
+                    do_settings_sections( 'fone_nyt_top_stories' );
                     submit_button();
                 ?>
     		</form>
@@ -58,8 +58,8 @@ class Fone_NYT_Data_Block_Plugin {
     }
 
     public function fone_setup_sections() {
-        add_settings_section( 'fone_how_to_section', 'How to use this plugin', array( $this, 'fone_section_callback' ), 'fone_nyt_data_block' );
-        add_settings_section( 'fone_form_settings_section', 'NYT API settings', array( $this, 'fone_section_callback' ), 'fone_nyt_data_block' );
+        add_settings_section( 'fone_how_to_section', 'How to use this plugin', array( $this, 'fone_section_callback' ), 'fone_nyt_top_stories' );
+        add_settings_section( 'fone_form_settings_section', 'NYT API settings', array( $this, 'fone_section_callback' ), 'fone_nyt_top_stories' );
     }
 
     public function fone_section_callback( $arguments ) {
@@ -86,8 +86,8 @@ class Fone_NYT_Data_Block_Plugin {
                 'supplimental' => 'https://api.nytimes.com/svc/topstories/v2/home.json?api-key={{api_key}}',
 
         );
-        add_settings_field( $form_field['uid'], $form_field['label'], array( $this, 'fone_field_callback' ), 'fone_nyt_data_block', $form_field['section'], $form_field );
-        register_setting( 'fone_nyt_data_block', $form_field['uid'] );
+        add_settings_field( $form_field['uid'], $form_field['label'], array( $this, 'fone_field_callback' ), 'fone_nyt_top_stories', $form_field['section'], $form_field );
+        register_setting( 'fone_nyt_top_stories', $form_field['uid'] );
    
     }
 
@@ -116,22 +116,16 @@ class Fone_NYT_Data_Block_Plugin {
 
     }
 
-    public function display_external_data($api_endpoint){
+    public function fone_nyt_shortcode() {
+        $api_endpoint = get_option('nyt_api_endpoint');
         $response = wp_safe_remote_get($api_endpoint, $args = [
             'reject_unsafe_urls' => true
         ]);
         $response_body = wp_remote_retrieve_body($response);
         $objectify_response_body = json_decode($response_body);
         $results = $objectify_response_body->results;
-        return $results;
-    }
-
-
-    public function fone_nyt_shortcode() {
-        $nyt_api_endpoint = get_option('nyt_api_endpoint');
-        $data = display_external_data($nyt_api_endpoint);
         $list = '<ul>';
-        foreach ($data as $result){
+        foreach ($results as $result){
             $list .= '<li><a href="' . $result->url . '" target="_blank">' . $result->title . '</a></li>';
         }
         $list .= '</ul>';
@@ -139,4 +133,4 @@ class Fone_NYT_Data_Block_Plugin {
     }
 
 }
-new Fone_NYT_Data_Block_Plugin();
+new Fone_NYT_Top_Stories_Plugin();
