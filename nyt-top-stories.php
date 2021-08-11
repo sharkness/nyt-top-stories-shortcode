@@ -116,19 +116,24 @@ class Fone_NYT_Top_Stories_Plugin {
 
     }
 
-    public function fone_nyt_shortcode() {
-        $api_endpoint = get_option('nyt_api_endpoint');
+    public function fone_get_external_data($api_endpoint) {
         $response = wp_safe_remote_get($api_endpoint, $args = [
             'reject_unsafe_urls' => true
         ]);
         $response_body = wp_remote_retrieve_body($response);
         $objectify_response_body = json_decode($response_body);
         $results = $objectify_response_body->results;
-        $list = '<ul>';
+        return $results;
+    }
+
+    public function fone_nyt_shortcode() {
+        $nyt_api_endpoint = get_option('nyt_api_endpoint');
+        $results = $this->fone_get_external_data($nyt_api_endpoint);
+        $list = '<div class="fone-nyt-block"><ul>';
         foreach ($results as $result){
             $list .= '<li><a href="' . $result->url . '" target="_blank">' . $result->title . '</a></li>';
         }
-        $list .= '</ul>';
+        $list .= '</ul></div>';
         return $list;
     }
 
